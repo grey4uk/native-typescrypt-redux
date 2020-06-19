@@ -1,0 +1,4 @@
+#Fri Jun 19 15:11:30 EEST 2020
+base.0=C\:\\Users\\1\\Documents\\goit_hw\\REACT\\TypeScrypt+React\\native-typescrypt-redux\\android\\app\\build\\intermediates\\dex\\debug\\mergeDexDebug\\classes.dex
+path.0=classes.dex
+renamed.0=classes.dex
