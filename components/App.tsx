@@ -1,92 +1,52 @@
 import React, {useState} from 'react';
+import {useSelector, useDispatch} from 'react-redux';
+import {View, Alert, Keyboard} from 'react-native';
 import styles from './styles.css';
-import {Provider} from 'react-redux';
-import {
-  Text,
-  TextInput,
-  View,
-  TouchableOpacity,
-  FlatList,
-  Image,
-  Alert,
-  Keyboard,
-} from 'react-native';
 import ModalComponent from './Modal';
-import store from '../redux/store';
+import AddTaskForm from './AddTaskForm';
+import TaskList from './TaskList';
+import {Task} from '../redux/types';
+import {RootState} from '../redux/rootReducer';
+import {addTaskAction,editTaskAction,delTaskAction} from '../redux/actions';
 
-
-interface Task {
-  text: string;
-  id: number;
-}
-
-const App: React.FC = () => {
-  const [flag, setFlag] = useState<boolean>(false);
-  const [value, setValue] = useState<string>('');
-  const [tasks, setTasks] = useState<Array<Task>>([]);
+const App: React.FC = (): JSX.Element => {
+  const tasks = useSelector((state: RootState) => state);
+  const dispatch = useDispatch();
+  console.log('tasks :>> ', tasks);
+  // const [tasks, setTasks] = useState<Array<Task>>([]);
   const [task, setTask] = useState<Task | null>(null);
 
-  const addTask = (): void => {
+  const addTask = (value: string): void => {
     Keyboard.dismiss();
     !value
       ? Alert.alert('Empty post')
-      : (setTasks([...tasks, {text: value, id: Number(Date.now())}]),
-        setValue(''));
+      // : setTasks([...tasks, {text: value, id: Number(Date.now())}]);
+      :dispatch(addTaskAction({text: value, id: Number(Date.now())}))
   };
 
   const delTask = (id: number): void => {
-    setTasks(tasks.filter((el) => el.id !== id));
+    // setTasks(tasks.filter((el) => el.id !== id));
+    dispatch(delTaskAction(id));
   };
 
-  const editTask = (id: number, textValue: string) => {
-    setTasks(tasks.map((el) => (id === el.id ? {...el, text: textValue} : el)));
+  const editTask = (id: number, textValue: string): void => {
+    dispatch(editTaskAction({text:textValue,id}))
+    // setTasks(tasks.map((el) => (id === el.id ? {...el, text: textValue} : el)));
+    setTask(null);
+  };
+
+  const handleEdit = (el: Task): void => {
+    setTask(el);
   };
 
   return (
-    <>
-    {/* <Provider store={store}> */}
+   
       <View style={styles.wrapper}>
-        {flag && (
-          <ModalComponent
-            setFlag={setFlag}
-            task={task}
-            flag={flag}
-            editTask={editTask}
-          />
-        )}
-        {/* <Text>Hello World</Text> */}
-        <TextInput
-          style={styles.input}
-          placeholder="Enter task"
-          value={value}
-          onChangeText={setValue}
-        />
-        <TouchableOpacity style={styles.buttonAdd} onPress={addTask}>
-          <Text style={styles.buttonTitle}>ADD TASK</Text>
-        </TouchableOpacity>
-        <View>
-          <FlatList
-            keyExtractor={(item: any) => item.id}
-            data={tasks}
-            renderItem={({item}) => (
-              <View style={styles.post}>
-                <Text>{item.text}</Text>
-                <View style={{flexDirection: 'row'}}>
-                  <TouchableOpacity
-                    onPress={() => (setFlag(true), setTask(item))}>
-                    <Image source={require('../ui/images/gtkedit.png')} />
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={() => delTask(item.id)}>
-                    <Image source={require('../ui/images/remove.png')} />
-                  </TouchableOpacity>
-                </View>
-              </View>
-            )}
-          />
-        </View>
+        {task && <ModalComponent task={task} editTask={editTask} />}
+        <AddTaskForm addTask={addTask} />
+        <TaskList delTask={delTask} tasks={tasks} handleEdit={handleEdit} />
       </View>
-      {/* </Provider> */}
-    </>
+   
   );
 };
 
